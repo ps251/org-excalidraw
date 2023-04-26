@@ -69,6 +69,11 @@
   :type 'string
   :group 'org-excalidraw)
 
+(defcustom org-excalidraw-open-function nil
+  "Custom function for opening excalidraw file"
+  :type 'function
+  :group 'org-excalidraw)
+
 (defun org-excalidraw--validate-excalidraw-file (path)
   "Validate the excalidraw file at PATH is usable."
   (unless (string-suffix-p ".excalidraw" path)
@@ -89,7 +94,9 @@
   "Open corresponding .excalidraw file for svg located at PATH."
   (let ((excal-file-path (string-remove-suffix ".svg" path)))
     (org-excalidraw--validate-excalidraw-file excal-file-path)
-    (shell-command (org-excalidraw--shell-cmd-open excal-file-path system-type))))
+    (if org-excalidraw-open-function
+        (funcall org-excalidraw-open-function excal-file-path)
+      (shell-command (org-excalidraw--shell-cmd-open excal-file-path system-type)))))
 
 (defun org-excalidraw--handle-file-change (event)
   "Handle file update EVENT to convert files to svg."
@@ -109,7 +116,10 @@
     (org-excalidraw--validate-excalidraw-file path)
     (insert link)
     (with-temp-file path (insert org-excalidraw-base))
-    (shell-command (org-excalidraw--shell-cmd-open path system-type))))
+    (if org-excalidraw-open-function
+        (funcall org-excalidraw-open-function path)
+      (shell-command (org-excalidraw--shell-cmd-open path system-type)) )
+    ))
 
 
 ;;;###autoload
