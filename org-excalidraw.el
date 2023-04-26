@@ -105,6 +105,7 @@
       (when (string-suffix-p ".excalidraw" filename)
         (shell-command (org-excalidraw--shell-cmd-to-svg filename))))))
 
+
 ;;;###
 ;;;autoload
 (defun org-excalidraw-create-drawing ()
@@ -122,6 +123,38 @@
     ))
 
 
+(require 'org-element)
+
+(defvar my-org-let-info nil
+  "Save `info' arg of `org-latex-link'.")
+
+(defun my-org-let-info (fun link desc info)
+  "Save INFO locally in `my-org-latex-info'.
+Just pass all args LINK, DESC, and INFO to FUN."
+  (let ((my-org-let-info (list link info)))
+    (funcall fun link desc info)))
+
+(advice-add 'org-latex-link :around #'my-org-let-info)
+
+(gv-define-simple-setter
+ org-element-property
+ (lambda (property element value)
+   (org-element-put-property element property value))
+ 'fix-return)
+
+(defun org-excalidraw-export-link (path _desc backend)
+  "LaTeX specific tex-fig exporter.
+Export org links of form [[excalidraw:PATH][DESCRIPTION]] to LaTeX."
+  (when (eq backend 'latex)
+    (cl-letf* ((link (nth 0 my-org-let-info))
+               ((org-element-property :path link)
+                (concat path ".svg"))
+               (info (nth 1 my-org-let-info))
+               (ret (org-latex--inline-image link info)))
+      (replace-regexp-in-string "\\\\input{.*?\\(\\.svg\\)}" "" ret t t 1)))
+  )
+
+
 ;;;###autoload
 (defun org-excalidraw-initialize ()
   "Setup excalidraw.el. Call this after 'org-mode initialization."
@@ -133,6 +166,7 @@
   (file-notify-add-watch org-excalidraw-directory '(change) 'org-excalidraw--handle-file-change)
   (org-link-set-parameters "excalidraw"
                            :follow 'org-excalidraw--open-file-from-svg
+                           :export #'org-excalidraw-export-link
                            :image-data-fun (lambda (_protocol link _desc)
                                              (with-temp-buffer (insert-file-contents-literally link)
                                                                (buffer-substring-no-properties
