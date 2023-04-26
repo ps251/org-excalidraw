@@ -88,7 +88,7 @@
 
 (defun org-excalidraw--open-file-from-svg (path)
   "Open corresponding .excalidraw file for svg located at PATH."
-  (let ((excal-file-path (string-remove-suffix ".svg" path)))
+  (let ((excal-file-path (concat (string-remove-suffix ".svg" path) ".excalidraw")))
     (org-excalidraw--validate-excalidraw-file excal-file-path)
     (if org-excalidraw-open-function
         (funcall org-excalidraw-open-function excal-file-path)
