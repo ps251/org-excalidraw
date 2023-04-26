@@ -80,10 +80,6 @@
     (error
      "Excalidraw file must have .excalidraw extension")))
 
-(defun org-excalidraw--shell-cmd-to-svg (path)
-  "Construct shell cmd for converting excalidraw file with PATH to svg."
-  (concat "excalidraw_export --rename_fonts=true " (format "\"%s\"" path)))
-
 (defun org-excalidraw--shell-cmd-open (path os-type)
   "Construct shell cmd to open excalidraw file with PATH for OS-TYPE."
   (if (eq os-type 'darwin)
@@ -97,13 +93,6 @@
     (if org-excalidraw-open-function
         (funcall org-excalidraw-open-function excal-file-path)
       (shell-command (org-excalidraw--shell-cmd-open excal-file-path system-type)))))
-
-(defun org-excalidraw--handle-file-change (event)
-  "Handle file update EVENT to convert files to svg."
-  (when (string-equal (cadr event)  "renamed")
-    (let ((filename (cadddr event)))
-      (when (string-suffix-p ".excalidraw" filename)
-        (shell-command (org-excalidraw--shell-cmd-to-svg filename))))))
 
 
 ;;;###
@@ -163,7 +152,6 @@ Export org links of form [[excalidraw:PATH][DESCRIPTION]] to LaTeX."
     (error
      "Excalidraw directory %s does not exist"
      org-excalidraw-directory))
-  (file-notify-add-watch org-excalidraw-directory '(change) 'org-excalidraw--handle-file-change)
   (org-link-set-parameters "excalidraw"
                            :follow 'org-excalidraw--open-file-from-svg
                            :export #'org-excalidraw-export-link
