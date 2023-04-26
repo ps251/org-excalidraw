@@ -94,15 +94,15 @@
         (funcall org-excalidraw-open-function excal-file-path)
       (shell-command (org-excalidraw--shell-cmd-open excal-file-path system-type)))))
 
-
 ;;;###
 ;;;autoload
 (defun org-excalidraw-create-drawing ()
   "Create an excalidraw drawing and insert an 'org-mode' link to it at Point."
   (interactive)
-  (let* ((filename (format "%s.excalidraw" (org-id-uuid)))
+  (let* ((uuid (org-id-uuid))
+         (filename (format "%s.excalidraw" uuid))
          (path (expand-file-name filename org-excalidraw-directory))
-         (link (format "[[excalidraw:%s.svg]]" path)))
+         (link (format "[[excalidraw:%s.svg]]" (expand-file-name uuid org-excalidraw-directory))))
     (org-excalidraw--validate-excalidraw-file path)
     (insert link)
     (with-temp-file path (insert org-excalidraw-base))
