@@ -81,7 +81,7 @@
 
 (defun org-excalidraw--validate-excalidraw-file (path)
   "Validate the excalidraw file at PATH is usable."
-  (unless (string-suffix-p ".excalidraw" path)
+  (unless (string-suffix-p (concat "." org-excalidraw-extension) path)
     (error
      "Excalidraw file must have .excalidraw extension")))
 
