@@ -69,8 +69,18 @@
   :type 'string
   :group 'org-excalidraw)
 
+(defcustom org-excalidraw-creation-extension "md"
+  "File extension of new excalidraw files at initial creation."
+  :type 'string
+  :group 'org-excalidraw)
+
 (defcustom org-excalidraw-extension "excalidraw"
   "File extension of new excalidraw files. Will usually be 'excalidraw'"
+  :type 'string
+  :group 'org-excalidraw)
+
+(defcustom org-excalidraw-svg-extension "svg"
+  "File extension of new svg files. Will usually be 'svg'"
   :type 'string
   :group 'org-excalidraw)
 
@@ -93,7 +103,7 @@
 
 (defun org-excalidraw--open-file-from-svg (path)
   "Open corresponding .excalidraw file for svg located at PATH."
-  (let ((excal-file-path (concat (string-remove-suffix ".svg" path) ".excalidraw")))
+  (let ((excal-file-path (concat (string-remove-suffix (concat "." org-excalidraw-svg-extension ) path) (concat "." org-excalidraw-extension ))))
     (org-excalidraw--validate-excalidraw-file excal-file-path)
     (if org-excalidraw-open-function
         (funcall org-excalidraw-open-function excal-file-path)
@@ -105,10 +115,9 @@
   "Create an excalidraw drawing and insert an 'org-mode' link to it at Point."
   (interactive)
   (let* ((uuid (org-id-uuid))
-         (filename (format "%s.excalidraw.%s" uuid org-excalidraw-extension))
+         (filename (format "%s.excalidraw.%s" uuid org-excalidraw-creation-extension))
          (path (expand-file-name filename org-excalidraw-directory))
-         (link (format "[[excalidraw:%s.svg]]" (expand-file-name uuid org-excalidraw-directory))))
-    (org-excalidraw--validate-excalidraw-file path)
+         (link (format "[[excalidraw:%s.%s]]" (expand-file-name uuid org-excalidraw-directory) org-excalidraw-svg-extension)))
     (insert link)
     (with-temp-file path (insert org-excalidraw-base))
     (if org-excalidraw-open-function
